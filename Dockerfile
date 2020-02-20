@@ -10,7 +10,8 @@ ENV TERM=xterm \
     LANG=${LOCALE} \
     LC_ALL=${LOCALE} \
     DEBIAN_FRONTEND=noninteractive \
-    TMP_DOCKER_BUILD_DIR=/tmp/tmp-build
+    TMP_DOCKER_BUILD_DIR=/tmp/tmp-build \
+    IMG_VERSION=0.5.6
 
 #
 # add repos and update
@@ -37,12 +38,12 @@ RUN mkdir -p ${TMP_DOCKER_BUILD_DIR} && \
     gzip \
     wget \
     zip \
-    vim
+    vim && \
 
-# RUN rm -rf ${TMP_DOCKER_BUILD_DIR} && \
-#     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-#     echo "Done: cleanup"
+    rm -rf ${TMP_DOCKER_BUILD_DIR} && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    echo "Done: cleanup"
 
-RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.6/img-linux-amd64" -o "/usr/local/bin/img" \
+RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v${IMG_VERSION}/img-linux-amd64" -o "/usr/local/bin/img" \
 	&& chmod a+x "/usr/local/bin/img"
 
