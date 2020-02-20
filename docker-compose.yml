@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  jenkins-builder:
+    hostname: jenkins-builder
+    container_name: jenkins-builder
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: jmaclean/jenkins-builder
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+        # --security-opt seccomp=unconfined --security-opt apparmor=unconfined
+
+    # image: jmaclean/jenkins-builder:v5
+    # env_file order matters. The last one is leading
+    # env_file:
+    #   - build/config/generic.conf
+    #   - build/config/branch_develop.conf
+    #   - build/config/deploy_dev.conf
+    # ports:
+    #   - "80:8080"
+    #   - "443:8443"
+    # volumes: 
+    #   - ./build/app/www:/app
+    #   - ./build/app/data:/data # For fast development
+    #   - ./build/config:/config
+    # volumes: 
+    #   - .:/app
+    command: tail -f /dev/null
