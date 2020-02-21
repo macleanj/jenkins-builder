@@ -15,18 +15,15 @@ ENV TERM=xterm \
 
 #
 # add repos and update
-#
 RUN mkdir -p ${TMP_DOCKER_BUILD_DIR} && \
     apt-get -o Acquire::ForceIPv4=true update && \
     apt-get upgrade -f -y && \
 #
 # Set the locale and timezone (Debian version)
-#
     apt-get install -y tzdata locales && \
     locale-gen ${LOCALE} && \
     ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
-#
 #
 # pdi-ce: Additional packages
 # libwebkitgtk-1.0-0 addresses the SWT issue: java.lang.UnsatisfiedLinkError: Could not load SWT library.
@@ -39,11 +36,14 @@ RUN mkdir -p ${TMP_DOCKER_BUILD_DIR} && \
     wget \
     zip \
     vim && \
-
+#
+# Cleanup
     rm -rf ${TMP_DOCKER_BUILD_DIR} && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     echo "Done: cleanup"
 
+#
+# Install IMG
 RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v${IMG_VERSION}/img-linux-amd64" -o "/usr/local/bin/img" \
 	&& chmod a+x "/usr/local/bin/img"
 

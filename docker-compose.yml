@@ -4,29 +4,54 @@ services:
   jenkins-builder:
     hostname: jenkins-builder
     container_name: jenkins-builder
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: jmaclean/jenkins-builder
-    privileged: true
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # image: jmaclean/jenkins-builder:0.5.6
+    image: r.j3ss.co/img
+    # privileged: true
+    # https://github.com/moby/buildkit/blob/master/docs/rootless.md
     security_opt:
       - seccomp:unconfined
       - apparmor:unconfined
-        # --security-opt seccomp=unconfined --security-opt apparmor=unconfined
+      # - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)
+    volumes:
+      - .:/app
+    entrypoint:
+      - tail
+      - -f
+      - /dev/null
 
-    # image: jmaclean/jenkins-builder:v5
-    # env_file order matters. The last one is leading
-    # env_file:
-    #   - build/config/generic.conf
-    #   - build/config/branch_develop.conf
-    #   - build/config/deploy_dev.conf
-    # ports:
-    #   - "80:8080"
-    #   - "443:8443"
-    # volumes: 
-    #   - ./build/app/www:/app
-    #   - ./build/app/data:/data # For fast development
-    #   - ./build/config:/config
-    # volumes: 
-    #   - .:/app
-    command: tail -f /dev/null
+
+  # jenkins-builder:
+  #   hostname: jenkins-builder
+  #   container_name: jenkins-builder
+  #   # build:
+  #   #   context: .
+  #   #   dockerfile: Dockerfile
+  #   image: moby/buildkit:rootless
+  #   # privileged: true
+  #   # https://github.com/moby/buildkit/blob/master/docs/rootless.md
+  #   security_opt:
+  #     - seccomp:unconfined
+  #     - apparmor:unconfined
+  #     # - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)
+  #   command: tail -f /dev/null
+
+  # docker-buildkit:
+  #   hostname: docker-buildkit
+  #   container_name: docker-buildkit
+  #   environment:
+  #     DOCKER_BUILDKIT: 1
+  #   # build:
+  #   #   context: .
+  #   #   dockerfile: Dockerfile
+  #   image: docker:19.03.6
+  #   # security_opt:
+  #   #   - seccomp:unconfined
+  #   #   - apparmor:unconfined
+  #   #   - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)  
+  #   command: tail -f /dev/null
+  
+
+    # COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose build
