@@ -7,51 +7,14 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    # image: jmaclean/jenkins-builder:0.5.6
+    # image: jmaclean/jenkins-builder:0.5.build
     image: r.j3ss.co/img
-    # privileged: true
-    # https://github.com/moby/buildkit/blob/master/docs/rootless.md
     security_opt:
-      - seccomp:unconfined
       - apparmor:unconfined
-      # - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)
+      # - seccomp:unconfined
     volumes:
       - .:/app
     entrypoint:
       - tail
       - -f
       - /dev/null
-
-
-  # jenkins-builder:
-  #   hostname: jenkins-builder
-  #   container_name: jenkins-builder
-  #   # build:
-  #   #   context: .
-  #   #   dockerfile: Dockerfile
-  #   image: moby/buildkit:rootless
-  #   # privileged: true
-  #   # https://github.com/moby/buildkit/blob/master/docs/rootless.md
-  #   security_opt:
-  #     - seccomp:unconfined
-  #     - apparmor:unconfined
-  #     # - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)
-  #   command: tail -f /dev/null
-
-  # docker-buildkit:
-  #   hostname: docker-buildkit
-  #   container_name: docker-buildkit
-  #   environment:
-  #     DOCKER_BUILDKIT: 1
-  #   # build:
-  #   #   context: .
-  #   #   dockerfile: Dockerfile
-  #   image: docker:19.03.6
-  #   # security_opt:
-  #   #   - seccomp:unconfined
-  #   #   - apparmor:unconfined
-  #   #   - systempaths:unconfined # (For Kubernetes, set securityContext.procMount to Unmasked.)  
-  #   command: tail -f /dev/null
-  
-
-    # COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose build
