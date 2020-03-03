@@ -1,0 +1,184 @@
+// ------------------------
+// Shared Library Functions
+// ------------------------
+// Implicitly loaded in the project Folder
+
+import com.daimler.openshift.OpenShiftBuilder
+
+def debugInfo
+
+pipeline {
+  triggers {
+    pollSCM('* * * * *') /* default: poll once a minute */
+  }
+
+  options {
+    buildDiscarder(
+      logRotator(
+        artifactDaysToKeepStr: '', 
+        artifactNumToKeepStr: '5', 
+        daysToKeepStr: '', 
+        numToKeepStr: '5'
+      )
+    )
+    timestamps()
+  }
+
+  environment {
+    GIT_AUTHOR_NAME = sh(returnStdout: true, script: 'git show -s --pretty=%an').trim()
+  }
+
+  agent {
+    // Mind the _ (underscore) in the definition. Containers themsolved will have the _ exchanged for a -
+    kubernetes(k8sagent(name: 'base+jenkins_builder+s_micro', label: 'jnlp', cloud: 'kubernetes'))
+  }
+
+  stages {
+    stage ('Set environment') {
+      agent { label 'master' }
+      environment {
+        TMP_TAGS_NAME = "${TAG_NAME ? TAG_NAME : ''}"
+        TMP_CHANGE_ID = "${CHANGE_ID ? CHANGE_ID : ''}"
+        BASE_DIR = sh(returnStdout: true, script: "echo ${WORKSPACE} | sed -e 's?.*/workspace/??g' | sed -e 's?/??g'").trim()
+        WORKSPACE_LIBS = sh(returnStdout: true, script: "[ -d ${WORKSPACE}/../workspace@libs ] && echo \"${WORKSPACE}/../workspace@libs\" || echo \"${WORKSPACE}/../${BASE_DIR}@libs\"").trim()
+        PREP_LOAD_ENV = sh(returnStdout: false, script: "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/prepEnv.sh -git_commit ${GIT_COMMIT} -tag_name ${TMP_TAGS_NAME} -change_id ${TMP_CHANGE_ID} > /dev/null 2>&1")
+      }
+      steps {
+        sh 'echo "master - Set environment"'
+        load "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/files/env.groovy"
+
+        // Instantiate all needed library-variables
+        script {
+          _github = new Github(this)
+          _builder = new OpenShiftBuilder(this)
+
+          if (env.CICD_DEBUG == '1') {
+            debugInfo = sh(script: "printenv | sort", returnStdout: true)
+            echo "DEBUG: Environment\n${debugInfo}"
+          }
+        }
+      }
+    }
+    stage ('TEST') {
+      steps {
+        // container ('jnlp') {
+        //   sh 'echo $(ls -la ..)'
+        //   sh 'echo "Environment in jnlp"'
+        //   sh 'printenv | sort'
+        // }
+
+        // container ('jenkins-builder') {
+        //   sh 'echo $(ls -la ..)'
+        //   sh 'echo "Environment in jenkins-builder"'
+        //   sh 'printenv | sort'
+        // }
+
+        container ('jenkins-builder') {
+          sh 'echo "jenkins-builder - TEST"'
+
+          // dir ("/build-volume") {
+            sh 'echo "IMG Version OUT:"'
+            // sh 'mkdir /tmp/cache'
+            // sh 'echo $(ls -la)'
+            // sh 'img build -s ./cache -f Dockerfile -t jmaclean/tessie .'
+            // sh 'cp -r $WORKSPACE/* .'
+
+            sh 'img build -f Dockerfile.test -t jmaclean/tessie .'
+            // sh 'img build -t irssi /repo/irssi/'
+          // }
+        }
+      }
+    }
+    // stage ('Keep') {
+    //   when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+    //   steps {
+    //     container ('dind') {
+    //       sh 'echo "Build stage. Building image for ${APP_NAME} version ${CICD_TAGS_ID}."'
+
+    //       dir ("${CICD_BUILD_PATH}") {
+    //         script {
+    //           dockerImage = docker.build("${CICD_REGISTRY}/${APP_NAME}:${CICD_TAGS_ID}", "-f ${CICD_BUILD_FILE} .")
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+    stage ('Build Image Keep') {
+      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      steps {
+        container ('dind') {
+          sh 'echo "Build stage. Building image for ${APP_NAME} version ${CICD_TAGS_ID}."'
+
+          dir ("${CICD_BUILD_PATH}") {
+            script {
+              dockerImage = docker.build("${CICD_REGISTRY}/${APP_NAME}:${CICD_TAGS_ID}", "-f ${CICD_BUILD_FILE} .")
+            }
+          }
+        }
+      }
+    }
+    // stage ('Push Image Keep') {
+    //   when {
+    //     environment name: 'CICD_BUILD_ENABLED', value: '1'
+    //   }
+    //   steps {   
+    //     container ('dind') {
+    //       script {
+    //         docker.withRegistry( "${CICD_REGISTRY_URL}", "${CICD_REGISTRY_CREDENTIALS}" ) {
+    //           dockerImage.push()
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
+    stage ('Unit Testing)') {
+      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      steps {
+        sh 'echo "Compile Code"'
+      }
+    }
+    stage ('Build Image') {
+      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      steps {
+        sh 'echo "Build Image"'
+      }
+    }
+    stage ('Push Image') {
+      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      steps {
+        sh 'echo "Push Image"'
+      }
+    }
+    stage ('Deploy') {
+      when { environment name: 'CICD_DEPLOY_ENABLED', value: '1' }
+      steps {
+        sh 'echo "Deploy"'
+      }
+    }
+  
+  // stages
+  }
+
+post {
+  always {
+    echo 'This will always run'
+  }
+  success {
+    echo 'This will run only if successful'
+  }
+  failure {
+    echo 'This will run only if failed'
+  }
+  unstable {
+    echo 'This will run only if the run was marked as unstable'
+  }
+  changed {
+    echo 'This will run only if the state of the Pipeline has changed'
+    echo 'For example, if the Pipeline was previously failing but is now successful'
+  }
+// post
+}
+
+
+}
