@@ -1,27 +1,13 @@
 # docker build -t jmaclean/jenkins-builder:0.5.7 -f Dockerfile.jenkins-builder .
+# docker push jmaclean/jenkins-builder:0.5.7
 FROM r.j3ss.co/img:v0.5.7
 
 LABEL description="Patched official img build for Jenkins (incl OpenShift)"
 LABEL maintainer="Jerome Mac Lean - CrossLogic Consulting"
 
 USER root
-
 RUN mkdir -p /home/user/.local && \
-    chmod 777 /home/user/.local
-    
-    #  && \
-    # https://github.com/genuinetools/img/issues/240#issuecomment-490335426
-    # sh -c "echo 28633 > /proc/sys/user/max_user_namespaces"
-
-
-# # Add user for Jenkins builds
-# RUN adduser -D -u 1002860099 jenkins \
-#   && mkdir -p /run/jenkins/1002860099 \
-#   && chown -R jenkins /run/jenkins/1002860099 /home/jenkins \
-#   && echo jenkins:100000:65536 | tee /etc/subuid | tee /etc/subgid
-
-# USER jenkins
-# ENV USER jenkins
-# ENV HOME /home/jenkins
-# ENV XDG_RUNTIME_DIR=/run/jenkins/1002860099
-
+    chmod 777 /home/user/.local && \
+    chmod g=u /etc/passwd
+ENTRYPOINT [ "docker-entrypoint.sh" ]
+USER 1001
