@@ -3,8 +3,6 @@
 // ------------------------
 // Implicitly loaded in the project Folder
 
-import com.daimler.openshift.OpenShiftBuilder
-
 def debugInfo
 
 pipeline {
@@ -29,7 +27,6 @@ pipeline {
   }
 
   agent {
-    // Mind the _ (underscore) in the definition. Containers themsolved will have the _ exchanged for a -
     kubernetes(k8sagent(name: 'base+jenkins_builder+s_micro', label: 'jnlp', cloud: 'kubernetes'))
   }
 
@@ -47,11 +44,7 @@ pipeline {
         sh 'echo "master - Set environment"'
         load "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/files/env.groovy"
 
-        // Instantiate all needed library-variables
         script {
-          _github = new Github(this)
-          _builder = new OpenShiftBuilder(this)
-
           if (env.CICD_DEBUG == '1') {
             debugInfo = sh(script: "printenv | sort", returnStdout: true)
             echo "DEBUG: Environment\n${debugInfo}"
@@ -59,126 +52,43 @@ pipeline {
         }
       }
     }
-    stage ('TEST') {
-      steps {
-        // container ('jnlp') {
-        //   sh 'echo $(ls -la ..)'
-        //   sh 'echo "Environment in jnlp"'
-        //   sh 'printenv | sort'
-        // }
-
-        // container ('jenkins-builder') {
-        //   sh 'echo $(ls -la ..)'
-        //   sh 'echo "Environment in jenkins-builder"'
-        //   sh 'printenv | sort'
-        // }
-
-        container ('jenkins-builder') {
-          sh 'echo "jenkins-builder - TEST"'
-
-          // dir ("/build-volume") {
-            sh 'echo "IMG Version OUT:"'
-            // sh 'mkdir /tmp/cache'
-            // sh 'echo $(ls -la)'
-            // sh 'img build -s ./cache -f Dockerfile -t jmaclean/tessie .'
-            // sh 'cp -r $WORKSPACE/* .'
-
-            sh 'img build -f Dockerfile.test -t jmaclean/tessie .'
-            // sh 'img build -t irssi /repo/irssi/'
-          // }
-        }
-      }
-    }
-    // stage ('Keep') {
-    //   when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
-    //   steps {
-    //     container ('dind') {
-    //       sh 'echo "Build stage. Building image for ${APP_NAME} version ${CICD_TAGS_ID}."'
-
-    //       dir ("${CICD_BUILD_PATH}") {
-    //         script {
-    //           dockerImage = docker.build("${CICD_REGISTRY}/${APP_NAME}:${CICD_TAGS_ID}", "-f ${CICD_BUILD_FILE} .")
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    stage ('Build Image Keep') {
-      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
-      steps {
-        container ('dind') {
-          sh 'echo "Build stage. Building image for ${APP_NAME} version ${CICD_TAGS_ID}."'
-
-          dir ("${CICD_BUILD_PATH}") {
-            script {
-              dockerImage = docker.build("${CICD_REGISTRY}/${APP_NAME}:${CICD_TAGS_ID}", "-f ${CICD_BUILD_FILE} .")
-            }
-          }
-        }
-      }
-    }
-    // stage ('Push Image Keep') {
-    //   when {
-    //     environment name: 'CICD_BUILD_ENABLED', value: '1'
-    //   }
-    //   steps {   
-    //     container ('dind') {
-    //       script {
-    //         docker.withRegistry( "${CICD_REGISTRY_URL}", "${CICD_REGISTRY_CREDENTIALS}" ) {
-    //           dockerImage.push()
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
-    stage ('Unit Testing)') {
-      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
-      steps {
-        sh 'echo "Compile Code"'
-      }
-    }
     stage ('Build Image') {
       when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
       steps {
-        sh 'echo "Build Image"'
+        container ('jenkins-builder') {
+          sh 'echo "jenkins-builder - Build Image"'
+          sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${APP_NAME}:${CICD_TAGS_ID} .'
+        }
       }
     }
-    stage ('Push Image') {
+    stage ('Publish Image') {
       when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
       steps {
         sh 'echo "Push Image"'
       }
     }
-    stage ('Deploy') {
-      when { environment name: 'CICD_DEPLOY_ENABLED', value: '1' }
-      steps {
-        sh 'echo "Deploy"'
-      }
-    }
-  
   // stages
   }
 
-post {
-  always {
-    echo 'This will always run'
+  post {
+    always {
+      echo 'This will always run'
+    }
+    success {
+      echo 'This will run only if successful'
+    }
+    failure {
+      echo 'This will run only if failed'
+    }
+    unstable {
+      echo 'This will run only if the run was marked as unstable'
+    }
+    changed {
+      echo 'This will run only if the state of the Pipeline has changed'
+      echo 'For example, if the Pipeline was previously failing but is now successful'
+    }
+  // post
   }
-  success {
-    echo 'This will run only if successful'
-  }
-  failure {
-    echo 'This will run only if failed'
-  }
-  unstable {
-    echo 'This will run only if the run was marked as unstable'
-  }
-  changed {
-    echo 'This will run only if the state of the Pipeline has changed'
-    echo 'For example, if the Pipeline was previously failing but is now successful'
-  }
-// post
-}
 
-
+// pipeline
 }
