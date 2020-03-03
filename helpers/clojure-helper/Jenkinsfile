@@ -27,7 +27,7 @@ pipeline {
   }
 
   agent {
-    kubernetes(k8sagent(name: 'base+jenkins_builder+s_micro', label: 'jnlp', cloud: 'kubernetes'))
+    kubernetes(k8sagent(name: 'base+s_mini', label: 'jnlp', cloud: 'kubernetes'))
   }
 
   stages {
