@@ -44,12 +44,12 @@ pipeline {
         sh 'echo "master - Set environment"'
         load "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/files/env.groovy"
 
-        // script {
-        //   if (env.CICD_DEBUG == '1') {
-        //     debugInfo = sh(script: "printenv | sort", returnStdout: true)
-        //     echo "DEBUG: Environment\n${debugInfo}"
-        //   }
-        // }
+        script {
+          if (env.CICD_DEBUG == '1') {
+            debugInfo = sh(script: "printenv | sort", returnStdout: true)
+            echo "DEBUG: Environment\n${debugInfo}"
+          }
+        }
         sh 'printenv | sort'
       }
     }
