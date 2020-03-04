@@ -38,7 +38,7 @@ pipeline {
         TMP_CHANGE_ID = "${CHANGE_ID ? CHANGE_ID : ''}"
         BASE_DIR = sh(returnStdout: true, script: "echo ${WORKSPACE} | sed -e 's?.*/workspace/??g' | sed -e 's?/??g'").trim()
         WORKSPACE_LIBS = sh(returnStdout: true, script: "[ -d ${WORKSPACE}/../workspace@libs ] && echo \"${WORKSPACE}/../workspace@libs\" || echo \"${WORKSPACE}/../${BASE_DIR}@libs\"").trim()
-        PREP_LOAD_ENV = sh(returnStdout: false, script: "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/prepEnv.sh -git_commit ${GIT_COMMIT} -tag_name ${TMP_TAGS_NAME} -change_id ${TMP_CHANGE_ID} > /dev/null 2>&1")
+        PREP_LOAD_ENV = sh(returnStdout: false, script: "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/prepEnv.sh -build_number ${BUILD_NUMBER} -git_commit ${GIT_COMMIT} -tag_name ${TMP_TAGS_NAME} -change_id ${TMP_CHANGE_ID} > /dev/null 2>&1")
       }
       steps {
         sh 'echo "master - Set environment"'
@@ -58,7 +58,7 @@ pipeline {
       steps {
         container ('jenkins-builder') {
           sh 'echo "jenkins-builder - Build Image"'
-          sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${APP_NAME}:${CICD_TAGS_ID} .'
+          sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_APP_NAME}:${CICD_TAGS_ID} .'
         }
       }
     }
