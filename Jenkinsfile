@@ -13,9 +13,9 @@ pipeline {
   options {
     buildDiscarder(
       logRotator(
-        artifactDaysToKeepStr: '', 
+        artifactDaysToKeepStr: '100', 
         artifactNumToKeepStr: '5', 
-        daysToKeepStr: '', 
+        daysToKeepStr: '100',
         numToKeepStr: '5'
       )
     )
@@ -50,15 +50,16 @@ pipeline {
             echo "DEBUG: Environment\n${debugInfo}"
           }
         }
-        sh 'printenv | sort'
       }
     }
     stage ('Build Image') {
       when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
       steps {
         container ('jenkins-builder') {
-          sh 'echo "jenkins-builder - Build Image"'
-          sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_APP_NAME}:${CICD_TAGS_ID} .'
+          dir ("${CICD_TAG_APP_NAME}") {
+            sh 'echo "jenkins-builder - Build Image"'
+            sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAG_APP_NAME}:${CICD_TAGS_ID} .'
+          }
         }
       }
     }
