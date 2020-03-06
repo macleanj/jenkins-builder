@@ -66,28 +66,20 @@ pipeline {
     stage ('Publish Image') {
       when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
       steps {
-        sh 'echo "Push Image"'
+        container ('jenkins-builder') {
+          dir ("${CICD_TAG_APP_NAME}") {
+            sh 'echo "jenkins-builder - Publish Image"'
+            sh 'img push ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAG_APP_NAME}:${CICD_TAGS_ID}'
+          }
+        }
       }
     }
   // stages
   }
 
   post {
-    always {
-      echo 'This will always run'
-    }
-    success {
-      echo 'This will run only if successful'
-    }
     failure {
       echo 'This will run only if failed'
-    }
-    unstable {
-      echo 'This will run only if the run was marked as unstable'
-    }
-    changed {
-      echo 'This will run only if the state of the Pipeline has changed'
-      echo 'For example, if the Pipeline was previously failing but is now successful'
     }
   // post
   }
