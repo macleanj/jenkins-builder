@@ -5,8 +5,8 @@ services:
     hostname: jenkins-builder
     container_name: jenkins-builder
     build:
-      context: .
-      dockerfile: Dockerfile.jenkins-builder
+      context: ./base/jenkins-builder/
+      dockerfile: Dockerfile
     image: jmaclean/jenkins-builder:0.5.7
     # image: r.j3ss.co/img
     security_opt:
