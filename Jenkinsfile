@@ -4,18 +4,20 @@
 // Implicitly loaded in the project Folder
 
 def debugInfo
+def g = globalVars()
+// g.buildThrottle = 1
 
 pipeline {
-  triggers {
-    pollSCM('* * * * *') /* default: poll once a minute */
-  }
 
   options {
+    // skipDefaultCheckout()
+    disableResume()
+    disableConcurrentBuilds()
     buildDiscarder(
       logRotator(
-        artifactDaysToKeepStr: '100', 
+        artifactDaysToKeepStr: '', 
         artifactNumToKeepStr: '5', 
-        daysToKeepStr: '100',
+        daysToKeepStr: '', 
         numToKeepStr: '5'
       )
     )
@@ -33,11 +35,15 @@ pipeline {
   stages {
     stage ('Set environment') {
       agent { label 'master' }
+      when {
+        beforeAgent true
+        expression { BUILD_NUMBER.toInteger() <= g.buildThrottle }
+      }
       environment {
         TMP_TAGS_NAME = "${TAG_NAME ? TAG_NAME : ''}"
         TMP_CHANGE_ID = "${CHANGE_ID ? CHANGE_ID : ''}"
-        BASE_DIR = sh(returnStdout: true, script: "echo ${WORKSPACE} | sed -e 's?.*/workspace/??g' | sed -e 's?/??g'").trim()
-        WORKSPACE_LIBS = sh(returnStdout: true, script: "[ -d ${WORKSPACE}/../workspace@libs ] && echo \"${WORKSPACE}/../workspace@libs\" || echo \"${WORKSPACE}/../${BASE_DIR}@libs\"").trim()
+        WORKSPACE_BASE_DIR = sh(returnStdout: true, script: "echo ${WORKSPACE} | sed -e 's?.*/workspace/??g' | sed -e 's?@.*/*??g'").trim()
+        WORKSPACE_LIBS = sh(returnStdout: true, script: "[ -d ${WORKSPACE}/../workspace@libs ] && echo \"${WORKSPACE}/../workspace@libs\" || echo \"${WORKSPACE}/../${WORKSPACE_BASE_DIR}@libs\"").trim()
         PREP_LOAD_ENV = sh(returnStdout: false, script: "${WORKSPACE_LIBS}/cicd/resources/com/cicd/jenkins/prepEnv.sh -build_number ${BUILD_NUMBER} -git_commit ${GIT_COMMIT} -tag_name ${TMP_TAGS_NAME} -change_id ${TMP_CHANGE_ID} > /dev/null 2>&1")
       }
       steps {
@@ -53,23 +59,23 @@ pipeline {
       }
     }
     stage ('Build Image') {
-      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      when { expression { BUILD_NUMBER.toInteger() <= g.buildThrottle } }
       steps {
         container ('jenkins-builder') {
-          dir ("${CICD_TAG_APP_NAME}") {
+          dir ("${CICD_TAGS_APP_NAME}") {
             sh 'echo "jenkins-builder - Build Image"'
-            sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAG_APP_NAME}:${CICD_TAGS_ID} .'
+            sh 'img build -f Dockerfile -t ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAGS_APP_NAME}:${CICD_TAGS_ID} .'
           }
         }
       }
     }
     stage ('Publish Image') {
-      when { environment name: 'CICD_BUILD_ENABLED', value: '1' }
+      when { expression { BUILD_NUMBER.toInteger() <= g.buildThrottle } }
       steps {
         container ('jenkins-builder') {
-          dir ("${CICD_TAG_APP_NAME}") {
+          dir ("${CICD_TAGS_APP_NAME}") {
             sh 'echo "jenkins-builder - Publish Image"'
-            sh 'img push ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAG_APP_NAME}:${CICD_TAGS_ID}'
+            sh 'img push ${CICD_REGISTRY_URL}/${CICD_REGISTRY_SPACE}/${CICD_TAGS_APP_NAME}:${CICD_TAGS_ID}'
           }
         }
       }
