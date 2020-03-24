@@ -13,7 +13,7 @@ config:
     generic:
       agent:
         name: 's_micro'
-      dockerFile: 'Dockerfile.cicd'
+      dockerFile: 'Dockerfile'
     dev:
       name: 'Development'
       platformName: 'Local'
