@@ -34,9 +34,9 @@ pipeline {
         expression { cicd.job.buildEnabled == 1 }
       }
       steps {
-        dir (cicd.appName) {
+        // dir (cicd.appName) {
           _build(this)
-        }
+        // }
       }
     }
 
@@ -46,11 +46,11 @@ pipeline {
         expression { cicd.job.buildEnabled == 1 }
       }
       steps {
-        dir (cicd.appName) {
+        // dir (cicd.appName) {
           withCredentials([usernamePassword(credentialsId: cicd.job.environment.registryCredentials, usernameVariable: 'user', passwordVariable: 'pass')]) {
             _publish(this, user, pass)
           }
-        }
+        // }
       }
     }
 
