@@ -11,11 +11,11 @@ config:
     buildEnvironment: 'dev'
   environments:
     generic:
+      appNamePrefix: 'jenkins-'
+      appNamePostfix: '-helper'
       agent:
         # name: 's_helper+ephemeral_storage'
         name: 's_helper'
-      appNamePrefix: 'jenkins-'
-      appNamePostfix: 'helper'
     dev:
       name: 'Development'
       platformName: 'Local'
