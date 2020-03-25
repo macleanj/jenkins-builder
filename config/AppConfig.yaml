@@ -14,7 +14,8 @@ config:
       agent:
         # name: 's_helper+ephemeral_storage'
         name: 's_helper'
-      dockerFile: 'Dockerfile'
+      appNamePrefix: 'jenkins-'
+      appNamePostfix: 'helper'
     dev:
       name: 'Development'
       platformName: 'Local'
