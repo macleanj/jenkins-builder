@@ -12,7 +12,8 @@ config:
   environments:
     generic:
       agent:
-        name: 's_helper+ephemeral_storage'
+        # name: 's_helper+ephemeral_storage'
+        name: 's_helper'
       dockerFile: 'Dockerfile'
     dev:
       name: 'Development'
