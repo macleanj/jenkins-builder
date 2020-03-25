@@ -12,7 +12,7 @@ config:
   environments:
     generic:
       agent:
-        name: 's_helper'
+        name: 's_micro'
       dockerFile: 'Dockerfile'
     dev:
       name: 'Development'

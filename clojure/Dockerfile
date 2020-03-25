@@ -2,6 +2,7 @@ FROM clojure:lein-2.8.1
 LABEL description="Helper for Jenkins builds"
 LABEL maintainer="Jerome Mac Lean - CrossLogic Consulting <jerome@crosslogic-consulting.com>"
 
+# ---- Left for reference. Can be deleted when the pipeline is migrated.
 # MAINTAINER Yannick Scherer <yannick.scherer@futurice.com>
 
 # RUN yum update -y \

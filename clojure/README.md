@@ -9,12 +9,10 @@ It includes:
 [leiningen]: https://leiningen.org/
 
 ### Build
-The build of the image itself is realized by Jenkins. Only the compiled application/service will be added to the registry. The helper is not supposed to be promoted to production deployments.
+The build of the image itself is realized by Jenkins. Only the compiled application/service will be added to the registry. The helper is not supposed to be promoted to production deployments as such.
 
 ### Usage
-The helper can be used calling ```h_clojure``` the k8 agent. The helper-name corresponds to the file name in the k8sagent library found in directory 
+The helper can be used calling the ```h_clojure``` the k8 agent. This can be configured by specifying the name at ```environments.<env>.agent.name```. Example:
 ```
-agent {
-    kubernetes(k8sagent(name: 'base+s_<builder_size>+h_clujure', label: 'jnlp', cloud: 'kubernetes'))
-  }
+environments.generic.agent.name: 's_helper+h_clojure'
 ```
