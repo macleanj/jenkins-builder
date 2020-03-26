@@ -2,8 +2,8 @@
 # docker push jmaclean/jenkins-jnlp-slave:3.40-1
 FROM jenkins/jnlp-slave:3.40-1
 
-LABEL description="Patched official jnlp-slave build for Jenkins (incl OpenShift)"
-LABEL maintainer="Jerome Mac Lean - CrossLogic Consulting"
+LABEL description="Patched official jnlp-slave build for Jenkins"
+LABEL maintainer="Jerome Mac Lean - CrossLogic Consulting <jerome@crosslogic-consulting.com>"
 
 USER root
 
