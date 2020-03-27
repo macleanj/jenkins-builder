@@ -4,11 +4,12 @@ job:
   throttle: 5
 config:
   build:
-    buildEnvironment: 'test'
+    buildEnvironment: 'int'
   pr:
     buildEnabled: 1
     deployEnabled: 0
-    buildEnvironment: 'dev'
+    buildEnvironment: 'int'
+    deployEnvironment: 'int'
   environments:
     generic:
       appNamePrefix: ''
