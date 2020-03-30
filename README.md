@@ -8,3 +8,6 @@ Test command not using privileged mode:
 ```
 docker run --rm -it --security-opt seccomp=unconfined --security-opt apparmor=unconfined -v $(pwd):/app r.j3ss.co/img build -t jmaclean/jenkins-builder /app
 ```
+
+# General Base
+This repo is also just to make images as for deployment. Think of general NodeJS and Java images that need to go to the private registry.
