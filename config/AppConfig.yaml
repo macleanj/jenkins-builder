@@ -4,12 +4,15 @@ job:
   throttle: 5
 config:
   build:
-    buildEnvironment: 'int'
+    buildEnvironment: 'cicd_dev_only'
+    # buildEnvironment: 'int'
   pr:
     buildEnabled: 1
     deployEnabled: 0
-    buildEnvironment: 'int'
-    deployEnvironment: 'int'
+    buildEnvironment: 'cicd_dev_only'
+    # buildEnvironment: 'int'
+    deployEnvironment: 'cicd_dev_only'
+    # deployEnvironment: 'int'
   environments:
     generic:
       appNamePrefix: ''
